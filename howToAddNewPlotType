@@ -1,0 +1,11 @@
+I am leaving myself a note since I am not a react / typescript person on how to create a support for new
+plot UI options:
+
+1. Inside of PlotEditor.tsx:
+   - create a new variable that will mimic the look of MarkerEditor (or LineEditor).
+     - Note that the new variable must be ThisCase to work properly
+   - Add more listenChange events similar to: onChange={(e) => handleMarkerChange('symbol', e.target.value)}
+     - Replace handleMarkerChange with handleXYZChange('whatever', e.target.value)
+   - Ensure that we are capable of rendering this new EditorMenu using a function similar to renderEditorBlockScatter
+     - This function can be used to distinguish between similar plots (like how a line + scatter are the same scatter type)
+   - Finally add to the renderPlotData the function created in the previous step. Always leave the final "else" statement so you can tract and know when certain plots are not supported.

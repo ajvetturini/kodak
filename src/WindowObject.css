@@ -1,0 +1,154 @@
+.window-object {
+    position: absolute;
+    width: 30vh;
+    height: 100%;
+    background-color: #333333;
+    border-radius: 4px;
+    box-sizing: border-box;
+    border: 2px solid rgb(164, 164, 164);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .resize-handle {
+    position: absolute;
+    bottom:0%;
+    right: 0;
+    width: 20px; /* Adjust size as needed */
+    height: 20px; /* Adjust size as needed */
+    cursor: nwse-resize; /* Set cursor to diagonal resize */
+    background-color: transparent;
+    border: none;
+    padding: 50;
+  }
+  
+  .resize-handle:before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 15px 15px 0; /* Adjust size and shape as needed */
+    border-color: transparent #8bf6cdd4 transparent transparent;
+  }
+  
+  .title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #444444;
+    padding: 5px;
+    cursor: grab;
+    
+  }
+
+  .title-bar.minimized {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #444444;
+    padding: 5px;
+    cursor: grab;
+    border: 2px solid rgb(164, 164, 164);
+    
+  }
+  
+  .title {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  .close-button {
+    background-color: transparent;
+    color: #ffffff;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  
+  .close-button:hover {
+    color: #ff0000;
+  }
+  
+  .content {
+    position: relative;
+    height: 100%;
+    padding-top: 25px; /* Same as graph-settings-bar height*/
+  }
+
+  .minimize-button {
+    background-color: transparent;
+    color: #ffffff;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  
+  .minimize-button:hover {
+    color: #888cc5;
+  }
+  
+  /* Styles when window is minimized */
+.window-object.minimized {
+  height: auto;
+  max-height: 30px; /* Adjust as needed */
+  border: transparent;
+}
+
+.window-content {
+  position: relative;
+  flex: 1;
+}
+  
+
+.tooltip {
+  position: absolute;
+  top: calc(0% + 5px); /* Position below the help button */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Center horizontally */
+  background-color: #ffcc00;
+  color: #000000;
+  padding: 5px;
+  border-radius: 4px;
+  z-index: 1000; /* Ensure tooltip appears above other elements */
+  font-size: 16px;
+}
+
+
+.help-button {
+  background-color: transparent;
+  color: #ffffff;
+  border: none;
+  font-size: 18px;
+  margin-left: 5px;
+  cursor: help;
+}
+
+.help-button:hover {
+  color: #ffcc00;
+}
+
+.graph-settings-bar {
+  position: relative;
+  left: 0;
+  width: 100%; /* Span the width of the WindowObject */
+  height: 25px; /* Set the desired height */
+  background-color: #8bf6cdd4; /* Background color */
+  display: flex;
+  align-items: center; /* Align items vertically */
+}
+
+.graph-settings-bar .tab {
+  display: inline-block;
+  padding: 10px;
+  cursor: pointer;
+  color: #353333;
+  font-size: 14px;
+}
+
+.graph-settings-bar .tab.active {
+  font-weight: bold; /* Make the active tab bold */
+}

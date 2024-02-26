@@ -1,0 +1,144 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.App {
+  display: flex;
+}
+
+.expand-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 5vh; /* Make the panel full height of the viewport */
+  width: 100px; /* Adjust as needed */
+  background-color: transparent; /* Default background color when collapsed */
+  padding: 10px;
+  border-radius: 0 5px 5px 0; /* Rounded corners on the right side */
+  transition: width 0.3s ease, background-color 0.3s ease; /* Add transition for smooth animation */
+  z-index: 100000;
+}
+
+
+.expand-bar.expanded {
+  width: 400px; /* Expanded width */
+  height: 100vh; /* Make the panel full height of the viewport */
+  background-color: #444444; /* Expanded color */
+  z-index: 100000;
+  border-right: 1px solid white;
+}
+
+.expand-bar p {
+  margin-top: 10px;
+}
+
+.expand-bar button {
+  background-color: #ffffff00;
+  font-weight: bold;
+  
+  cursor: pointer;
+  width: 100%; /* Make the button fill the entire width of the panel */
+}
+
+.expand-bar button:focus {
+  outline: none; /* Remove outline on focus */
+}
+
+.expanded {
+  width: 200px; /* Adjust as needed */
+}
+
+/* INPUT REGION CSS STYLING BELOW */
+
+.drop-zone {
+  width: 100vh;
+  height: 70vh;
+  border: 16px dashed #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.drop-zone.dragging {
+  border-color: #8bf6cdd4;
+  background-color: #aeffe068;
+}
+
+.file-input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.drop-zone-text {
+  font-size: 48px;
+  color: #ccc;
+  opacity: 1.0;
+}
+
+.delete-button-container {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background-color: #ffffff00; /* Background color of the delete button container */
+  padding: 20px; /* Adjust padding as needed */
+  text-align: center;
+}
+
+.delete-button-container button {
+  /* Additional styling for the delete button if needed */
+  position: flex;
+  background-color: #444444;
+  border: 1px solid rgb(164, 164, 164);
+}
+
+.link-style {
+  color: #8bf6cd; /* Normal state color */
+  cursor: pointer; /* Changes the cursor to indicate the item is clickable */
+  text-decoration: underline; /* Optional: adds underline to mimic a link */
+}
+
+.link-style:hover {
+  color: #8bf6cd; /* Hover state color - Adjust this as needed */
+}

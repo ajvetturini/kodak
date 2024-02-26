@@ -1,0 +1,51 @@
+.plot-container {
+    position: relative;
+    height: 100%; /* Ensure the plot-container div takes up the full height of its parent container */
+  }
+
+.objective {
+    font-size: 14;
+  }
+
+.constraints {
+    font-size: 14;
+    }
+
+  .settings-menu {
+    padding-top: 10px;
+  }
+  
+  .settings-table {
+      margin-top: 10px; /* Add some spacing between the export buttons and the table */
+  }
+
+  .export-buttons button {
+    /* Additional styling for the delete button if needed */
+    position: flex;
+    background-color: #444444;
+    border: 1px solid rgb(164, 164, 164);
+  }
+  
+  .settings-table table {
+      width: 100%;
+      border-collapse: collapse;
+  }
+  
+  .settings-table th,
+  .settings-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+  }
+  
+  .settings-table th[colspan="2"],
+  .settings-table th[colspan="2"] {
+      text-align: center;
+  }
+  
+  .settings-table select {
+      width: 100%;
+      padding: 6px 10px;
+      margin: 0;
+      box-sizing: border-box;
+  }

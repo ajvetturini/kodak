@@ -1,0 +1,82 @@
+.plot-editor {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Align items (including the button) to the left */
+}
+
+.plot-editor-button {
+    background-color: #444; /* Dark gray background */
+    color: #fff; /* White text */
+    border: none;
+    padding: 4px 8px; /* Smaller padding */
+    border-radius: 5px;
+    cursor: pointer;
+    border: 2px solid transparent; /* Initially transparent border */
+    font-size: 14px; /* Smaller font size */
+}
+
+.plot-editor-button:hover {
+    border-color: #8bf6cdd4; /* Light green on hover */
+}
+
+.plot-data-container {
+    color: #000; 
+}
+
+.legendgroup-container {
+    color: #000; /* Black text color */
+    margin-bottom: 10px; /* Add some spacing between elements */
+}
+
+.legendgroup-container label {
+    display: block; /* Ensure label is displayed on a new line */
+}
+
+.legendgroup-container input[type="text"] {
+    width: 100%; /* Take up full width of container */
+    padding: 5px; /* Add padding for better appearance */
+    border: 1px solid #ccc; /* Add a light gray border */
+    border-radius: 5px; /* Add some border radius */
+    background-color: #fff; /* White background */
+    color: #000; /* Black text color */
+}
+
+.show-legend-container {
+    color: #000; /* Black text color */
+}
+
+.show-legend-container label {
+    cursor: pointer; /* Change cursor to pointer on hover */
+    display: inline-flex; /* Align checkbox and text horizontally */
+    align-items: center; /* Center items vertically */
+}
+
+.show-legend-container input[type="checkbox"] {
+    margin-right: 5px; /* Add some space between checkbox and text */
+    appearance: none; /* Hide default checkbox appearance */
+    width: 16px; /* Set width for custom checkbox */
+    height: 16px; /* Set height for custom checkbox */
+    border: 1px solid #ccc; /* Add border for custom checkbox */
+    border-radius: 3px; /* Add border radius for custom checkbox */
+    background-color: #fff; /* White background for custom checkbox */
+}
+
+.show-legend-container input[type="checkbox"]:checked::before {
+    content: '\2714'; /* Unicode checkmark symbol */
+    font-size: 12px; /* Adjust size of checkmark */
+    color: #5cb85c; /* Green color for checked state */
+}
+
+.editor-label {
+    font-size: 14px; /* Smaller font size */
+    color: #000; /* Black text color */
+    margin-bottom: 5px; /* Add some spacing between labels */
+}
+
+.editor-input {
+    margin-bottom: 10px; /* Add some spacing between input fields */
+}
+
+.aj {
+    color: #000000;
+  }

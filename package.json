@@ -1,0 +1,35 @@
+{
+  "homepage":"https://ajvetturini.github.io/kodak",
+  "name": "kodak-app",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "plotly.js": "^2.29.1",
+    "plotly.js-dist": "^2.29.1",
+    "probe-image-size": "^7.2.3",
+    "react": "^18.2.0",
+    "react-color": "^2.19.3",
+    "react-dom": "^18.2.0",
+    "react-plotly.js": "^2.6.0",
+    "stream-browserify": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/plotly.js": "^2.29.1",
+    "@types/react": "^18.0.27",
+    "@types/react-dom": "^18.0.10",
+    "@types/react-plotly.js": "^2.6.3",
+    "@vitejs/plugin-react": "^3.1.0",
+    "gh-pages": "^6.1.1",
+    "typescript": "^4.9.3",
+    "vite": "^4.1.0"
+  }
+}
