@@ -39,7 +39,16 @@ const PlotEditor: React.FC<PlotEditorProps> = ({ position, plotData, onClose, on
         updateLayout(updatedPlotData, 'line');
     };
 
+    const handleMeshChange = (value: any) => {
+        const updatedLine = { ...localPlotData, ['color']: value };
+        // const updatedPlotData = { ...localPlotData, line: updatedLine };
+        setlocalPlotData(updatedLine);
+        updateLayout(updatedLine, 'mesh');
+    };
+
     const handleMarkerChange = (property: string, value: any) => {
+        console.log(property)
+        console.log(value)
         const updatedMarker = { ...localPlotData['marker'], [property]: value };
         const updatedPlotData = { ...localPlotData, marker: updatedMarker };
         setlocalPlotData(updatedPlotData);
@@ -112,13 +121,14 @@ const PlotEditor: React.FC<PlotEditorProps> = ({ position, plotData, onClose, on
 
     const ColorSelector = ({ type }: { type: string }) => {
         let colorValue: string | undefined; // Define a variable to hold the color value
-
         // Check the type and set the color value accordingly
         if (type === 'line' || type === 'marker') {
             colorValue = rgbToHex(localPlotData[type]['color']);
         } else if (type === 'outline') {
             // Handle 'outline' type
             colorValue = '#000000'
+        } else if (type === 'mesh') {
+            colorValue = '#A9A9A9'
         }
 
 
@@ -148,6 +158,8 @@ const PlotEditor: React.FC<PlotEditorProps> = ({ position, plotData, onClose, on
                             handleMarkerChange('color', e.target.value);
                         } if (type == 'outline') {
                             handleMarkerOutlineChange('color', e.target.value);
+                        } else if (type == 'mesh') {
+                            handleMeshChange(e.target.value);
                         }
                     }}>
                         <option value="">Color Presets</option>
@@ -287,9 +299,23 @@ const PlotEditor: React.FC<PlotEditorProps> = ({ position, plotData, onClose, on
         }
     };
 
+    const MeshEditor = () => {
+        return (
+            <div className="mesh-editor">
+                <ColorSelector type="mesh"/>  
+            </div>)
+    };
+
+    const renderEditorBlockMesh = () => {
+        return <MeshEditor />
+    };
+
+
     const renderPlotData = () => {
         if (localPlotData['type'] === 'scatter') {
             return renderEditorBlockScatter();
+        } else if (localPlotData['type'] === 'mesh3d') {
+            return renderEditorBlockMesh();
         } else {
             return (
                 <div className="plot-data-container">

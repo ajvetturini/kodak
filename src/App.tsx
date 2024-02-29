@@ -7,7 +7,7 @@ import WindowObject from './WindowObject';
 const curVersion = '0.0.1';  // Version Release # / Build # / Iteration #
 
 function App() {
-  const [isExpanded, setIsExpanded] = useState(false);  // SET THIS TO TRUE WHEN DEPLOYING AND ADD A "DO NOT SHOW" OPTION TO HIDE THIS.
+  const [isExpanded, setIsExpanded] = useState(true);  // SET THIS TO TRUE WHEN DEPLOYING AND ADD A "DO NOT SHOW" OPTION TO HIDE THIS.
   const [fileReadSuccessfully, setFileReadSuccessfully] = useState(false);
   const [showDeleteButton, setShowDeleteButton] = useState(false);
   const [windowObjects, setWindowObjects] = useState<{ title: string; description: string; closeable: boolean; showGraphSettingsBar?: boolean; plotData: any; graphType: string; position_x: number; position_y: number; vizData: any; metadata: any }[]>([]);
@@ -102,6 +102,7 @@ function App() {
   const handleUpdatePlotTrace = (updatedTrace: any, identifier: string) => {
     // Update the plot layout at the top level
     const windowObjectIndex = windowObjects.findIndex(obj => obj.title === identifier);
+    
     if (windowObjectIndex !== -1) {
         // Get the index of the windowObject with matching title
         const windowObject = windowObjects[windowObjectIndex];
@@ -126,11 +127,35 @@ function App() {
           console.log("Dont update, data not an array.", actualPlotData.data);
       } else {
         // This prevents idx from messing things up if a user selects the same menu option twice in a row
-        const idx = actualPlotData.data.findIndex((item, index) => {
-          return item['legendgroup'] === updatedTrace['legendgroup'];
-        });
+        /*const idx = actualPlotData.data.findIndex((item, index) => {
+          if ('legendgroup' in item) {
+            return item['legendgroup'] === updatedTrace['legendgroup'];
+          } else {
+            const tolerance = 0.0001; // Define a suitable tolerance level
+            const arraysAreEqual = item['x'].length === updatedTrace['x'].length && 
+                                   item['x'].every((element: any, index: any) => 
+                                   Math.abs(element - updatedTrace['x'][index]) < tolerance);
 
-        actualPlotData.data[idx] = updatedTrace;
+            return arraysAreEqual
+          }
+        });*/
+
+        const indices = actualPlotData.data.map((item, index) => {
+          if ('legendgroup' in item && item['legendgroup'] === updatedTrace['legendgroup']) {
+            return index; // Return the index if the legendgroup matches
+          } else {
+            const tolerance = 0.0001; // Define a suitable tolerance level
+            const arraysAreEqual = item['x'].length === updatedTrace['x'].length && 
+                                   item['x'].every((element: any, idx: any) => 
+                                   Math.abs(element - updatedTrace['x'][idx]) < tolerance);
+            return arraysAreEqual ? index : null; // Return the index if arrays are equal, else return null
+          }
+        }).filter((index): index is number => index !== null);
+
+        //actualPlotData.data[idx] = updatedTrace;
+        for (const idx of indices) {
+          actualPlotData.data[idx] = updatedTrace; // Update each item by index
+      }
         windowObject.plotData = JSON.stringify(actualPlotData);  
 
         // Update the windowObjects array with the modified windowObject
@@ -570,11 +595,11 @@ const loadExampleFile = async (fileName: string) => {
               Sample Outputs: <br></br>
               <a onClick={() => {
                 setIsExpanded(!isExpanded);
-                loadExampleFile('/SampleSingleObjective.plots')}}> Single Objective Optimization</a>
+                loadExampleFile('SampleSingleObjective.plots')}}> Single Objective Optimization</a>
               <br></br>
               <a onClick={() => {
                 setIsExpanded(!isExpanded);
-                loadExampleFile('/SampleMultiObjective.plots')}}> Multiobjective Optimization</a>
+                loadExampleFile('SampleMultiObjective.plots')}}> Multiobjective Optimization</a>
               </p>
               </p><br></br>
 

@@ -31,7 +31,7 @@
     height: 0;
     border-style: solid;
     border-width: 0 15px 15px 0; /* Adjust size and shape as needed */
-    border-color: transparent #8bf6cdd4 transparent transparent;
+    border-color: transparent #8bf6cdd4 #444444 transparent;
   }
   
   .title-bar {

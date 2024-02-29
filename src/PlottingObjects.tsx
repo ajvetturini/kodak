@@ -1,9 +1,10 @@
 // PlottingObject.tsx
 import PlotEditor from './PlotEditor';
-import React, { useRef, useState, useEffect} from 'react';
+import React, { useMemo, useState, useEffect} from 'react';
 import Plot from 'react-plotly.js';
 import Plotly from 'plotly.js-dist';
 import './PlottingObjects.css';
+import { update } from 'plotly.js';
 
 interface PlottingObjectProps {
   graphType: string;
@@ -32,6 +33,7 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
     const exportImage = (svg_or_png: string) => {
         layout.height = plotHeight;
         layout.width = plotWidth;
+        layout.uirevision = 'true',
         layout.paper_bgcolor = "rgba(255, 255, 255, 0)"
 
         const tempDiv = document.createElement('div');
@@ -188,22 +190,40 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
     };
 
     const handleChange = (updatedPlot: any, fieldChange: string) => {
+        console.log(updatedPlot)
+        console.log(fieldChange)
+        let comparisonString = 'legendgroup'
+        let meshChange = false;
+        if (fieldChange === 'mesh') {
+            comparisonString = 'type'
+            fieldChange = 'color'  // Switch value of fieldChange for cheaky way to update all mesh3d traces
+            meshChange = true;
+        } 
+        let updates = [];
         for (const key of Object.keys(plotData['data'])) {
             const value = plotData['data'][key];
-            if (value['legendgroup'] === updatedPlot['legendgroup']) {
-                // Perform some action specific to 'indicator'
-                value[fieldChange] = updatedPlot[fieldChange];
-                onUpdatePlotData(value)
-                // onUpdatePlotLayout(updatedLayout);  Similar functions we need to call to updated updatedPlot
-                // setLayout(updatedLayout);
-                break; // Exit the loop after performing the action
-            }
+            console.log(value)
+            // How to check if value is defined (i.e. to make sure it is not undefined / is a type I can check "in")
+            if (value && typeof value === 'object' && comparisonString in value && comparisonString in updatedPlot) {
+                if (value[comparisonString] === updatedPlot[comparisonString]) {
+                    // Perform some action specific to 'indicator'
+                    // (put this back if below fails) value[fieldChange] = updatedPlot[fieldChange];
+                    const updatedValue = { ...value, [fieldChange]: updatedPlot[fieldChange] };
+                    updates.push(updatedValue)
+                    // (put this back if above fails) onUpdatePlotData(value)
+
+                    if (meshChange === false) {
+                        break; // Exit the loop after performing the action if not performing a mesh color change.
+                    }
+                }
+            } 
         }
-    
+        updates.forEach(update => onUpdatePlotData(update));
     };
     
     const render_plotly_data = () => {
         layout.height = plotHeight;
+        layout.uirevision = 'true',
         layout.width = plotWidth;
         const config = { displayModeBar: false };
 
@@ -211,6 +231,7 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
             if (showPlotEditor === true) {
                 setShowPlotEditor(false);
             }
+            // We only populate an update if the "Event" timer is included since we only "pop up" 3D windows.
             const selectedPoints = event.points; // Extract selected data points
             const popUp = selectedPoints[0];
             const windowX =  window.scrollX;
@@ -253,6 +274,12 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
         if (event['yaxis.range[0]'] !== undefined && event['yaxis.range[1]'] !== undefined) {
             updatedLayout.yaxis.range = [event['yaxis.range[0]'], event['yaxis.range[1]']];
         }
+        
+        // Check if the 3D window is the event change:
+        if ('scene.camera' in event) {
+            updatedLayout.scene.camera = event['scene.camera']
+        }
+
         onUpdatePlotLayout(updatedLayout);  // Pass back the updatedLayout to update the plotData
         setLayout(updatedLayout);
       };
