@@ -289,10 +289,10 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
     const renderPlot = () => {
         // Logic to render plot based on graphType and plotData
         if (activeTab === 'View Output') {
-            if (graphType === '2D_Scatter') {
+            if (graphType === '2D_Scatter' || graphType === 'scatter') {
                 // return "2D Scatter Plot Call";
                 return render_plotly_data()
-            } else if (graphType === '3D_Scatter') {
+            } else if (graphType === '3D_Scatter' || graphType === 'scatter3d') {
                 //return "3D Scatter Plot Call";
                 return render_plotly_data()
             } else if (graphType === 'bar') {
