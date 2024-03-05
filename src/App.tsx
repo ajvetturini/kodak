@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
 import FileInput from './FileInput';
@@ -8,6 +8,8 @@ const curVersion = '0.0.1';  // Version Release # / Build # / Iteration #
 
 function App() {
   const [isExpanded, setIsExpanded] = useState(true);  // SET THIS TO TRUE WHEN DEPLOYING AND ADD A "DO NOT SHOW" OPTION TO HIDE THIS.
+  const [rememberExpand, setRememberExpand] = useState(true); // Default to remember expand preference
+  
   const [fileReadSuccessfully, setFileReadSuccessfully] = useState(false);
   const [showDeleteButton, setShowDeleteButton] = useState(false);
   const [windowObjects, setWindowObjects] = useState<{ title: string; description: string; closeable: boolean; showGraphSettingsBar?: boolean; plotData: any; graphType: string; position_x: number; position_y: number; vizData: any; metadata: any }[]>([]);
@@ -98,6 +100,29 @@ function App() {
     }
   };
 
+  function arePlotsEqual(curPlot: any, updatedPlot: any): boolean {    
+    // This function very simply checks for equivalent plots so I am updating the correct traces. Note that I am
+    // really just checking x y z values, and for some plots this logic may break? We should consider this in the 
+    // future.
+
+    // Check if all elements in the x and y arrays are the same
+    if (!curPlot.x.every((value: any, index: any) => value === updatedPlot.x[index]) ||
+        !curPlot.y.every((value: any, index: any) => value === updatedPlot.y[index])) {
+        return false;
+    }
+
+    // Check if z fields exist in both plots
+    if (curPlot.z && updatedPlot.z) {    
+        // Check if all elements in the z arrays are the same
+        if (!curPlot.z.every((value: any, index: any) => value === updatedPlot.z[index])) {
+            return false;
+        }
+    }
+
+    // If all conditions are met, return true
+    return true;
+  };
+
   // Note to self: You are here, need to pass this into PlottingObject similar to about Layout.
   const handleUpdatePlotTrace = (updatedTrace: any, identifier: string) => {
     // Update the plot layout at the top level
@@ -122,7 +147,6 @@ function App() {
             // Handle the error by just setting actualPlotData to plotData. This is useful for when passing in the problem definition block!
             actualPlotData = plotData;
         }
-
         if (!Array.isArray(actualPlotData.data)) {
           console.log("Dont update, data not an array.", actualPlotData.data);
       } else {
@@ -139,16 +163,16 @@ function App() {
             return arraysAreEqual
           }
         });*/
-
         const indices = actualPlotData.data.map((item, index) => {
           if ('legendgroup' in item && item['legendgroup'] === updatedTrace['legendgroup']) {
             return index; // Return the index if the legendgroup matches
           } else {
-            const tolerance = 0.0001; // Define a suitable tolerance level
+            /*const tolerance = 0.0001; // Define a suitable tolerance level
             const arraysAreEqual = item['x'].length === updatedTrace['x'].length && 
-                                   item['x'].every((element: any, idx: any) => 
+                                   item['x'].every((element: any, idx: any) =>
                                    Math.abs(element - updatedTrace['x'][idx]) < tolerance);
-            return arraysAreEqual ? index : null; // Return the index if arrays are equal, else return null
+            return arraysAreEqual ? index : null; // Return the index if arrays are equal, else return null*/
+            return arePlotsEqual(item, updatedTrace) ? index : null;
           }
         }).filter((index): index is number => index !== null);
 
@@ -171,10 +195,38 @@ function App() {
   };
 
 
+  // Functions for controlling the expand bar:
 
-  const toggleExpand = () => {
+  /*const toggleExpand = () => {
     setIsExpanded(!isExpanded);
+  };*/
+  const toggleExpand = () => {
+    setIsExpanded(prevExpanded => !prevExpanded);
+    if (rememberExpand) {
+      localStorage.setItem('rememberExpandPreference', JSON.stringify(!isExpanded));
+    }
   };
+
+  useEffect(() => {
+    const rememberExpandPreference = localStorage.getItem('rememberExpandPreference');
+    if (rememberExpandPreference) {
+      setRememberExpand(JSON.parse(rememberExpandPreference));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (rememberExpand) {
+      setIsExpanded(true); // If rememberExpand is true, show the bar, otherwise don't:
+    } else {
+      setIsExpanded(false);
+    }
+  }, [rememberExpand]);
+
+  const toggleRememberExpand = () => {
+    setRememberExpand(rememberExpand => !rememberExpand);
+    localStorage.setItem('rememberExpandPreference', JSON.stringify(!rememberExpand));
+  };
+
 
   const handleWindowClose = (title: string) => {
     // Remove the window object with the given title from the array
@@ -345,6 +397,8 @@ function App() {
                   break;
               case '_metadata':
                   use_metadata = true;
+                  windowObjectData.metadata = dataPass;
+                  console.log(windowObjectData)
                   /*
                   Will use this idea later once I figure it out more, time is not on my side!
                   windowObjectData.metadata = dataPass
@@ -534,13 +588,14 @@ const loadExampleFile = async (fileName: string) => {
     // Loop over each window object
     windowObjects.forEach((windowObject) => {
         // Extract the necessary data
+        console.log(windowObject)
         const { title, closeable, description, plotData, graphType, metadata} = windowObject;
         // Construct the object to be saved
         const dataToSave = {
             _title: title,
             _closeable: closeable,
             _description: description,
-            _showGraphSettingsBar: graphType,  // Dont ask why these dont match... first time making a react app!!
+            _showGraphSettingsBar: graphType,  // Dont ask why these dont match... oops
             _data: plotData,
             _metadata: metadata
         };
@@ -583,48 +638,58 @@ const loadExampleFile = async (fileName: string) => {
         {isExpanded && (
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
             <div>
-              <p style={{ textAlign: 'left' }}>
+              <div style={{ textAlign: 'left' }}>
                 This is a visualization application for the mango generative design framework for wireframe DNA origami by researchers from the <a href="https://www.andrew.cmu.edu/user/bex/pages/welcome" target="_blank"><b>Microsystems and Mechanobiology Laboratory</b></a> and the <a href="https://www.cmu.edu/me/idig/" target="_blank"><b>Integrated Design Innovation Group</b></a> at <b style={{ color: '#E0E0E0' }}>Carnegie Mellon University</b> in Pittsburgh, Pennsylvania.
-              </p><br></br>
+              </div>
+              <br />
 
+              <div style={{ textAlign: 'left' }}>
+                <b>How to use:</b> <br />
+                You may drag and drop a plots file (see <a href="https://github.com/ajvetturini/kodak" target="_blank"><b>GitHub page</b></a> for examples on how to create a results file). Or, select a sampled output from below to view the visualization capabilities of this application.
+                <br />
+                <br />
+                Sample Outputs: <br />
+                <a onClick={() => {
+                  setIsExpanded(!isExpanded);
+                  loadExampleFile('SampleSingleObjective.plots');
+                }}> Single Objective Optimization</a>
+                <br />
+                <a onClick={() => {
+                  setIsExpanded(!isExpanded);
+                  loadExampleFile('SampleMultiObjective.plots');
+                }}> Multiobjective Optimization</a>
+              </div>
+            </div>
+            
+            {/*
+            <div style={{ marginTop: 'auto', marginBottom: '-180px' }}>
               <p>
-              <b>How to use:</b> <br></br>
-              <p style={{ textAlign: 'left' }}>
-              You may drag and drop a plots file (see <a href="https://github.com/ajvetturini/kodak" target="_blank"><b>GitHub page</b></a> for examples on how to create a results file). Or, select a sampled output from below to view the visualization capabilities of this application.
-              <br></br><br></br>
-              Sample Outputs: <br></br>
-              <a onClick={() => {
-                setIsExpanded(!isExpanded);
-                loadExampleFile('SampleSingleObjective.plots')}}> Single Objective Optimization</a>
-              <br></br>
-              <a onClick={() => {
-                setIsExpanded(!isExpanded);
-                loadExampleFile('SampleMultiObjective.plots')}}> Multiobjective Optimization</a>
-              </p>
-              </p><br></br>
-
-
-              <p>
-                {/*<b>Citation and Links:</b> <br></br>
-                <p style={{ textAlign: 'left' }}>
+                <b>Citation and Links:</b> <br />
                 If you use mango or these images in your work, we kindly ask that you cite us via: <br></br>
                 (ADD CITATION INFO) <br></br>
-        </p>*/}
-                
               </p>
             </div>
+              */}
 
             <div style={{ marginTop: 'auto', marginBottom: '45px' }}>
               <p>
-                <b>Funding and Contact:</b> <br></br>
-                This work was funded by the NSF under grant award CMMI-2113301. <br></br>
-                If you have any questions, please feel free to <a href="mailto:avetturi@andrew.cmu.edu">email me!</a><br></br>
+                <b>Funding and Contact:</b> <br />
+                This work was funded by the NSF under grant award CMMI-2113301. <br />
+                If you have any questions, please feel free to <a href="mailto:avetturi@andrew.cmu.edu">email me!</a><br />
+                <br />
+                <input
+                  type="checkbox"
+                  checked={rememberExpand}
+                  onChange={toggleRememberExpand}
+                />
+                <label>Show bar upon open</label>
                 
-                <div style={{ fontSize: '12px', color: 'rgba(169,169,169,0.5)'}}>Kodak Alpha b{curVersion} </div>
               </p>
+              <div style={{ fontSize: '12px', marginBottom: '10px', color: 'rgba(169,169,169,0.5)'}}>Kodak Alpha b{curVersion} </div>
             </div>
           </div>
         )}
+
       </div>
 
       {!fileReadSuccessfully && (

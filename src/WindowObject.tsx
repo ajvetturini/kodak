@@ -39,7 +39,7 @@ const WindowObject: React.FC<WindowObjectProps> = ({ title, closeable, descripti
   const maxHeight = 900; // Set the maximum height
   let useWidth = minWidth;
   let useHeight = minHeight;
-
+  
   if (windowObjectSize && windowObjectSize.length === 2) { 
     if (windowObjectSize[0] > minWidth && windowObjectSize[0] < maxWidth) {
       useWidth = windowObjectSize[0];
@@ -163,10 +163,44 @@ const WindowObject: React.FC<WindowObjectProps> = ({ title, closeable, descripti
     onUpdatePlotLayout(actualPlotData.layout, title) // Passback to App.tsx to update the plotData
   };
 
+  function arePlotsEqual(curPlot: any, updatedPlot: any): boolean {    
+    // This function very simply checks for equivalent plots so I am updating the correct traces. Note that I am
+    // really just checking x y z values, and for some plots this logic may break? We should consider this in the 
+    // future.
+
+    // Check if all elements in the x and y arrays are the same
+    if (!curPlot.x.every((value: any, index: any) => value === updatedPlot.x[index]) ||
+        !curPlot.y.every((value: any, index: any) => value === updatedPlot.y[index])) {
+        return false;
+    }
+
+    // Check if z fields exist in both plots
+    if (curPlot.z && updatedPlot.z) {    
+        // Check if all elements in the z arrays are the same
+        if (!curPlot.z.every((value: any, index: any) => value === updatedPlot.z[index])) {
+            return false;
+        }
+    }
+
+    // If all conditions are met, return true
+    return true;
+  };
+
   const handleUpdatedPlotData = (updatedPlotData: any) => {
     // Update plotData to confer to the new udpatedPlotLayout
-    actualPlotData.data = updatedPlotData;
-    onUpdatePlotData(actualPlotData.data, title) // Passback to App.tsx to update the plotData
+    // Need to loop over actualPlotData.data and find where updatedPlotData is..
+    let plotIdx = -1;
+    for (let i = 0; i < actualPlotData.data.length; i++) {
+      const value = (actualPlotData.data as any[])[i];
+      if (arePlotsEqual(value, updatedPlotData)) {
+        (actualPlotData.data as any[])[i] = updatedPlotData;
+        plotIdx = i;  // Just checking rn.
+      }
+    }
+    //actualPlotData.data = updatedPlotData;
+    
+    //onUpdatePlotData(actualPlotData.data, title) // Passback to App.tsx to update the plotData
+    onUpdatePlotData(updatedPlotData, title)
   };
 
   const handleContentClick = (event: any) => {

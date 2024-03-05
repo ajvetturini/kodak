@@ -1,7 +1,9 @@
 .plot-editor {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Align items (including the button) to the left */
+    align-items: flex-start; /* Align items (including the button) to the left */
+    overflow-y: auto; /* Use 'auto' to show scrollbars when needed */
+    align-items: center; 
 }
 
 .plot-editor-button {

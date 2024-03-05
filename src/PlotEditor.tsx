@@ -12,6 +12,9 @@ interface PlotEditorProps {
 
 const PlotEditor: React.FC<PlotEditorProps> = ({ position, plotData, onClose, onChange }) => {
     const [localPlotData, setlocalPlotData] = useState(plotData);
+    if (!('showlegend' in localPlotData)) {
+        localPlotData.showlegend = true;
+    }
     const [selectedColor, setSelectedColor] = useState<string>('');
     const [isMarkerOutlineChecked, setIsMarkerOutlineChecked] = useState(localPlotData['marker'] && 'line' in localPlotData['marker']);
 
@@ -22,6 +25,7 @@ const PlotEditor: React.FC<PlotEditorProps> = ({ position, plotData, onClose, on
     };
 
     const updateLayout = (updatedPlotData: any, fieldChange: string) => {
+        console.log('her')
         onChange(updatedPlotData, fieldChange);
     }
 
@@ -46,9 +50,14 @@ const PlotEditor: React.FC<PlotEditorProps> = ({ position, plotData, onClose, on
         updateLayout(updatedLine, 'mesh');
     };
 
+    const handleFullMeshChange = (value: any) => {
+        const updatedLine = { ...localPlotData, ['color']: value };
+        // const updatedPlotData = { ...localPlotData, line: updatedLine };
+        setlocalPlotData(updatedLine);
+        updateLayout(updatedLine, 'fullmesh');
+    };
+
     const handleMarkerChange = (property: string, value: any) => {
-        console.log(property)
-        console.log(value)
         const updatedMarker = { ...localPlotData['marker'], [property]: value };
         const updatedPlotData = { ...localPlotData, marker: updatedMarker };
         setlocalPlotData(updatedPlotData);
@@ -160,6 +169,8 @@ const PlotEditor: React.FC<PlotEditorProps> = ({ position, plotData, onClose, on
                             handleMarkerOutlineChange('color', e.target.value);
                         } else if (type == 'mesh') {
                             handleMeshChange(e.target.value);
+                        } else if (type == 'fullmesh') {
+                            handleFullMeshChange(e.target.value);
                         }
                     }}>
                         <option value="">Color Presets</option>
@@ -301,13 +312,24 @@ const PlotEditor: React.FC<PlotEditorProps> = ({ position, plotData, onClose, on
 
     const MeshEditor = () => {
         return (
-            <div className="mesh-editor">
-                <ColorSelector type="mesh"/>  
-            </div>)
+            <div>
+                <br></br>
+                <div className="mesh-editor">
+                    <label style={{ color: 'black' }}>Individual Mesh Element Color:</label>
+                    <ColorSelector type="mesh"/>  
+                </div>
+                <br></br>
+                <div className="mesh-editor">
+                    <label style={{ color: 'black' }}>Full Mesh Color:</label>
+                    <ColorSelector type="fullmesh"/>  
+                </div>
+            </div>
+        );
     };
 
     const renderEditorBlockMesh = () => {
         return <MeshEditor />
+        
     };
 
 

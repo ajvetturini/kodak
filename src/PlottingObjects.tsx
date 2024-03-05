@@ -28,6 +28,7 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
     const [showPlotEditor, setShowPlotEditor] = useState(false);
     const [editorPosition, setEditorPosition] = useState({ x: 0, y: 0 });
     const [currentPopUp, setCurrentPopUp] = useState(null); 
+    console.log(plotWidth)
 
 
     const exportImage = (svg_or_png: string) => {
@@ -58,7 +59,11 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
                         <span style={{ marginRight: '20px' }}></span>
                         <button onClick={() => exportImage('png')}>Export to PNG</button>
                     </div>
-                    <div className="settings-table">
+                    <div>
+                        <br></br>
+                        WIP: Need to add some general plot editing features here (e.g. axis titles) that a user can click on otherwise via plotly
+                    </div>
+                    {/*<div className="settings-table">
                         <table>
                             <thead>
                                 <tr>
@@ -112,7 +117,7 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
 
                             </tbody>
                         </table>
-                    </div>
+                    </div>*/}
                 </div>
             );
         } else {
@@ -189,34 +194,67 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
         setShowPlotEditor(false); // Close the editor
     };
 
+    function arePlotsEqual(curPlot: any, updatedPlot: any): boolean {    
+        // This function very simply checks for equivalent plots so I am updating the correct traces. Note that I am
+        // really just checking x y z values, and for some plots this logic may break? We should consider this in the 
+        // future.
+
+        // Check if all elements in the x and y arrays are the same
+        if (!curPlot.x.every((value: any, index: any) => value === updatedPlot.x[index]) ||
+            !curPlot.y.every((value: any, index: any) => value === updatedPlot.y[index])) {
+            return false;
+        }
+    
+        // Check if z fields exist in both plots
+        if (curPlot.z && updatedPlot.z) {    
+            // Check if all elements in the z arrays are the same
+            if (!curPlot.z.every((value: any, index: any) => value === updatedPlot.z[index])) {
+                return false;
+            }
+        }
+    
+        // If all conditions are met, return true
+        return true;
+    }
+
     const handleChange = (updatedPlot: any, fieldChange: string) => {
-        console.log(updatedPlot)
-        console.log(fieldChange)
+
         let comparisonString = 'legendgroup'
         let meshChange = false;
         if (fieldChange === 'mesh') {
             comparisonString = 'type'
             fieldChange = 'color'  // Switch value of fieldChange for cheaky way to update all mesh3d traces
-            meshChange = true;
+            //meshChange = true;
         } 
+        if (fieldChange === 'fullmesh') {
+            comparisonString = 'type'
+            fieldChange = 'color'
+            meshChange = true;
+        }
         let updates = [];
         for (const key of Object.keys(plotData['data'])) {
             const value = plotData['data'][key];
-            console.log(value)
             // How to check if value is defined (i.e. to make sure it is not undefined / is a type I can check "in")
-            if (value && typeof value === 'object' && comparisonString in value && comparisonString in updatedPlot) {
-                if (value[comparisonString] === updatedPlot[comparisonString]) {
+            //if (value && typeof value === 'object' && comparisonString in value && comparisonString in updatedPlot) {
+            if (arePlotsEqual(value, updatedPlot)) {
+                //if (value[comparisonString] === updatedPlot[comparisonString]) {
                     // Perform some action specific to 'indicator'
                     // (put this back if below fails) value[fieldChange] = updatedPlot[fieldChange];
                     const updatedValue = { ...value, [fieldChange]: updatedPlot[fieldChange] };
                     updates.push(updatedValue)
                     // (put this back if above fails) onUpdatePlotData(value)
 
-                    if (meshChange === false) {
+                    /*if (meshChange === false) {
                         break; // Exit the loop after performing the action if not performing a mesh color change.
-                    }
-                }
-            } 
+                    } I think this is old code, commenting just in case rn.*/
+                //}
+            } else if (meshChange) {
+                // If meshChange is true then we must push ALL mesh3d objects related objects to have this new color:
+                if ('type' in value && value.type === 'mesh3d') {
+                    const updatedValue = { ...value, [fieldChange]: updatedPlot[fieldChange] };
+                    updates.push(updatedValue)
+                } 
+            }
         }
         updates.forEach(update => onUpdatePlotData(update));
     };
