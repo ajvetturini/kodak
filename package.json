@@ -1,5 +1,5 @@
 {
-  "homepage":"https://ajvetturini.github.io/kodak",
+  "homepage": "https://ajvetturini.github.io/kodak",
   "name": "kodak-app",
   "private": true,
   "version": "0.0.1",
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "buffer": "^6.0.3",
+    "lodash": "^4.17.21",
     "plotly.js": "^2.29.1",
     "plotly.js-dist": "^2.29.1",
     "probe-image-size": "^7.2.3",
@@ -23,6 +24,7 @@
     "stream-browserify": "^3.0.0"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.202",
     "@types/plotly.js": "^2.29.1",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",

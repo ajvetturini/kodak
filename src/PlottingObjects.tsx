@@ -5,6 +5,7 @@ import Plot from 'react-plotly.js';
 import Plotly from 'plotly.js-dist';
 import './PlottingObjects.css';
 import { update } from 'plotly.js';
+import { debounce } from 'lodash';
 
 interface PlottingObjectProps {
   graphType: string;
@@ -28,7 +29,6 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
     const [showPlotEditor, setShowPlotEditor] = useState(false);
     const [editorPosition, setEditorPosition] = useState({ x: 0, y: 0 });
     const [currentPopUp, setCurrentPopUp] = useState(null); 
-    console.log(plotWidth)
 
 
     const exportImage = (svg_or_png: string) => {
@@ -218,13 +218,11 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
     }
 
     const handleChange = (updatedPlot: any, fieldChange: string) => {
-
         let comparisonString = 'legendgroup'
         let meshChange = false;
         if (fieldChange === 'mesh') {
             comparisonString = 'type'
             fieldChange = 'color'  // Switch value of fieldChange for cheaky way to update all mesh3d traces
-            //meshChange = true;
         } 
         if (fieldChange === 'fullmesh') {
             comparisonString = 'type'
@@ -237,20 +235,19 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
             // How to check if value is defined (i.e. to make sure it is not undefined / is a type I can check "in")
             //if (value && typeof value === 'object' && comparisonString in value && comparisonString in updatedPlot) {
             if (arePlotsEqual(value, updatedPlot)) {
-                //if (value[comparisonString] === updatedPlot[comparisonString]) {
-                    // Perform some action specific to 'indicator'
-                    // (put this back if below fails) value[fieldChange] = updatedPlot[fieldChange];
+                /*if ('type' in value && value.type === 'mesh3d') {
                     const updatedValue = { ...value, [fieldChange]: updatedPlot[fieldChange] };
                     updates.push(updatedValue)
-                    // (put this back if above fails) onUpdatePlotData(value)
-
-                    /*if (meshChange === false) {
-                        break; // Exit the loop after performing the action if not performing a mesh color change.
-                    } I think this is old code, commenting just in case rn.*/
-                //}
+                } I think this was a brain fart... dont know why those ifs are like that.*/
+                // Update value:
+                const updatedValue = { ...value, [fieldChange]: updatedPlot[fieldChange] };
+                updates.push(updatedValue)
+                
             } else if (meshChange) {
                 // If meshChange is true then we must push ALL mesh3d objects related objects to have this new color:
-                if ('type' in value && value.type === 'mesh3d') {
+                // I currently just dont use a legendgroup for the mesh elements i need to plot so this works fine for now
+                // In the future, I may see a bug pop up because of this really bad logic :)
+                if ('type' in value && 'legendgroup' in value && 'legendgroup' in updatedPlot && value.legendgroup === updatedPlot.legendgroup) {
                     const updatedValue = { ...value, [fieldChange]: updatedPlot[fieldChange] };
                     updates.push(updatedValue)
                 } 
@@ -263,47 +260,57 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
         layout.height = plotHeight;
         layout.uirevision = 'true',
         layout.width = plotWidth;
-        const config = { displayModeBar: false };
+        const config = { displayModeBar: false, scrollZoom: true, };
 
         const handleSelectedPoints = (event: any) => {
+            let showEditor = true;
             if (showPlotEditor === true) {
                 setShowPlotEditor(false);
+            }
+            if ('points' in event && 'legendgroup' in event.points[0].data) {
+                if (event.points[0].data.legendgroup == 'animation') {
+                    showEditor = false;
+                }
             }
             // We only populate an update if the "Event" timer is included since we only "pop up" 3D windows.
             const selectedPoints = event.points; // Extract selected data points
             const popUp = selectedPoints[0];
             const windowX =  window.scrollX;
             const windowY =  window.scrollY;
-            setEditorPosition({ x: windowX, y: windowY }); // Set position for the editor
-            setCurrentPopUp(popUp['data']); // Pass the selected popUp data to the editor
-            setShowPlotEditor(true); // Show the editor
 
-            const x = selectedPoints[0].x;
-            const y = selectedPoints[0].y;
-            // Call another plotting function here if needed (check if in Visualized, if yes plot 3D Scatter)
-            const pointAsString = `(${selectedPoints[0].x}, ${selectedPoints[0].y})`;
+            if (showEditor === true) {
+                setEditorPosition({ x: windowX, y: windowY }); // Set position for the editor
+                setCurrentPopUp(popUp['data']); // Pass the selected popUp data to the editor
+                setShowPlotEditor(true); // Show the editor
 
-            if (Object.keys(vizData).length === 1) {
-                const pointPlotMap= Object.values(vizData)[0] as Record<string, any>;
-
-                // Now we check if this x, y (point as string) is in the viz map:
-                if (pointAsString in pointPlotMap) {
-                    const jsonDataToPlot = pointPlotMap[pointAsString];
-                    
-                    // Need to create a new WindowObject at App.tsx.... how can I do this???
-                    createNewWindowObject(pointAsString, jsonDataToPlot)
-                }
+                // Call another plotting function here if needed (check if in Visualized, if yes plot 3D Scatter)
+                const pointAsString = `(${selectedPoints[0].x}, ${selectedPoints[0].y})`;
                 
-            } else {
-                // WIP: When I incorporate better three.js and can "relax" the visualization a bit, I will then need
-                //      to figure out how to map one WindowObject to a specific part of vizData.
+                if (Object.keys(vizData).length === 1) {
+                    const pointPlotMap= Object.values(vizData)[0] as Record<string, any>;
+                    // Now we check if this x, y (point as string) is in the viz map:
+                    if (pointAsString in pointPlotMap) {
+                        const jsonDataToPlot = pointPlotMap[pointAsString];
+                        // Need to create a new WindowObject at App.tsx.... how can I do this???
+                        createNewWindowObject(pointAsString, jsonDataToPlot)
+                    }
+                    
+                } else {
+                    // WIP: When I incorporate better three.js and can "relax" the visualization a bit, I will then need
+                    //      to figure out how to map one WindowObject to a specific part of vizData.
+                }
             }
+            
         };
-        return <Plot data={plotData.data} layout={layout} config={config} onRelayout={handleRelayout} onClick={handleSelectedPoints}/>
-
+        if ('frames' in plotData) {
+            return <Plot data={plotData.data} layout={layout} frames={plotData.frames} config={config} onRelayout={handleRelayout} onClick={handleSelectedPoints}/>
+        } else {
+            return <Plot data={plotData.data} layout={layout} config={config} onRelayout={handleRelayout} onClick={handleSelectedPoints}/>
+        }
+        
     };
 
-    const handleRelayout = (event: Plotly.PlotRelayoutEvent) => {
+    const handleRelayout = debounce((event: Plotly.PlotRelayoutEvent) => {
         const updatedLayout = { ...plotData.layout };
         // Check if xaxis.range is present in the event object
         if (event['xaxis.range[0]'] !== undefined && event['xaxis.range[1]'] !== undefined) {
@@ -320,7 +327,7 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
 
         onUpdatePlotLayout(updatedLayout);  // Pass back the updatedLayout to update the plotData
         setLayout(updatedLayout);
-      };
+      }, 100);
                    
 
     // Function to render the plot based on graphType and plotData

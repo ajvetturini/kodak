@@ -25,7 +25,6 @@ const PlotEditor: React.FC<PlotEditorProps> = ({ position, plotData, onClose, on
     };
 
     const updateLayout = (updatedPlotData: any, fieldChange: string) => {
-        console.log('her')
         onChange(updatedPlotData, fieldChange);
     }
 

@@ -167,6 +167,11 @@ const WindowObject: React.FC<WindowObjectProps> = ({ title, closeable, descripti
     // This function very simply checks for equivalent plots so I am updating the correct traces. Note that I am
     // really just checking x y z values, and for some plots this logic may break? We should consider this in the 
     // future.
+    //console.log(curPlot);
+    //console.log(updatedPlot);
+    if (curPlot.x.length !== updatedPlot.x.length || curPlot.y.length !== updatedPlot.y.length) {
+      return false;
+    }
 
     // Check if all elements in the x and y arrays are the same
     if (!curPlot.x.every((value: any, index: any) => value === updatedPlot.x[index]) ||

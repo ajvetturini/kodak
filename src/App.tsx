@@ -150,30 +150,8 @@ function App() {
         if (!Array.isArray(actualPlotData.data)) {
           console.log("Dont update, data not an array.", actualPlotData.data);
       } else {
-        // This prevents idx from messing things up if a user selects the same menu option twice in a row
-        /*const idx = actualPlotData.data.findIndex((item, index) => {
-          if ('legendgroup' in item) {
-            return item['legendgroup'] === updatedTrace['legendgroup'];
-          } else {
-            const tolerance = 0.0001; // Define a suitable tolerance level
-            const arraysAreEqual = item['x'].length === updatedTrace['x'].length && 
-                                   item['x'].every((element: any, index: any) => 
-                                   Math.abs(element - updatedTrace['x'][index]) < tolerance);
-
-            return arraysAreEqual
-          }
-        });*/
         const indices = actualPlotData.data.map((item, index) => {
-          if ('legendgroup' in item && item['legendgroup'] === updatedTrace['legendgroup']) {
-            return index; // Return the index if the legendgroup matches
-          } else {
-            /*const tolerance = 0.0001; // Define a suitable tolerance level
-            const arraysAreEqual = item['x'].length === updatedTrace['x'].length && 
-                                   item['x'].every((element: any, idx: any) =>
-                                   Math.abs(element - updatedTrace['x'][idx]) < tolerance);
-            return arraysAreEqual ? index : null; // Return the index if arrays are equal, else return null*/
             return arePlotsEqual(item, updatedTrace) ? index : null;
-          }
         }).filter((index): index is number => index !== null);
 
         //actualPlotData.data[idx] = updatedTrace;
@@ -398,7 +376,6 @@ function App() {
               case '_metadata':
                   use_metadata = true;
                   windowObjectData.metadata = dataPass;
-                  console.log(windowObjectData)
                   /*
                   Will use this idea later once I figure it out more, time is not on my side!
                   windowObjectData.metadata = dataPass
@@ -588,7 +565,6 @@ const loadExampleFile = async (fileName: string) => {
     // Loop over each window object
     windowObjects.forEach((windowObject) => {
         // Extract the necessary data
-        console.log(windowObject)
         const { title, closeable, description, plotData, graphType, metadata} = windowObject;
         // Construct the object to be saved
         const dataToSave = {
