@@ -4,7 +4,7 @@ import './App.css'
 import FileInput from './FileInput';
 import WindowObject from './WindowObject';
 
-const curVersion = '0.0.1';  // Version Release # / Build # / Iteration #
+const curVersion = '0.0.2';  // Version Release # / Build # / Iteration #
 
 function App() {
   const [isExpanded, setIsExpanded] = useState(true);  // SET THIS TO TRUE WHEN DEPLOYING AND ADD A "DO NOT SHOW" OPTION TO HIDE THIS.
@@ -12,7 +12,7 @@ function App() {
   
   const [fileReadSuccessfully, setFileReadSuccessfully] = useState(false);
   const [showDeleteButton, setShowDeleteButton] = useState(false);
-  const [windowObjects, setWindowObjects] = useState<{ title: string; description: string; closeable: boolean; showGraphSettingsBar?: boolean; plotData: any; graphType: string; position_x: number; position_y: number; vizData: any; metadata: any }[]>([]);
+  const [windowObjects, setWindowObjects] = useState<{ title: string; description: string; closeable: boolean; showGraphSettingsBar?: boolean; plotData: any; graphType: string; position_x: number; position_y: number; vizData: any; metadata: any; onChange: boolean }[]>([]);
   const [clickCount, setClickCount] = useState(0);
 
   const handleWindowObjectClick = () => {
@@ -35,7 +35,8 @@ function App() {
       position_x: window.screen.width / 2, 
       vizData: {},
       position_y: window.screen.height / 2,
-      metadata: [0, 0]
+      metadata: [0, 0],
+      onChange: false
     };
 
 
@@ -50,7 +51,8 @@ function App() {
       position_x: windowObjectData.position_x,
       position_y: windowObjectData.position_y,
       vizData: windowObjectData.vizData,
-      metadata: windowObjectData.metadata
+      metadata: windowObjectData.metadata,
+      onChange: windowObjectData.onChange
   };
     
   // Update the state to include the new WindowObject
@@ -344,7 +346,7 @@ function App() {
       for (const plot in dataFile) {
         const windowObjectData = { title: "", description: "", closeable: false, showGraphSettingsBar: false, 
           plotData: null, graphType: '', position_x: (window.innerWidth - 300) / 2, vizData: {}, windowObjectSize: [1, 2],
-          position_y: (window.innerHeight - 200) / 2, metadata: [0, 0] };// The issue has to be something with this and why position_y is NaN
+          position_y: (window.innerHeight - 200) / 2, metadata: [0, 0], onChange: false };// The issue has to be something with this and why position_y is NaN
         const current_plot = dataFile[plot]  
         for (const fieldName in current_plot) {
             // Extract data from dataFile based on the combinedKey
@@ -353,6 +355,7 @@ function App() {
             // Map the data to the corresponding field in the windowObjectData
             switch (fieldName) {
               case '_title':
+                  windowObjectData.onChange = false;
                   windowObjectData.title = dataPass;
                   break;
               case '_description':
@@ -475,7 +478,7 @@ const processFileData = (dataFile: any) => {
   for (const plot in dataFile) {
     const windowObjectData = { title: "", description: "", closeable: false, showGraphSettingsBar: false, 
       plotData: null, graphType: '', position_x: (window.innerWidth - 300) / 2, vizData: {}, windowObjectSize: [1, 2],
-      position_y: (window.innerHeight - 200) / 2, metadata: [0, 0] };// The issue has to be something with this and why position_y is NaN
+      position_y: (window.innerHeight - 200) / 2, metadata: [0, 0], onChange: false };// The issue has to be something with this and why position_y is NaN
     const current_plot = dataFile[plot]  
     for (const fieldName in current_plot) {
         // Extract data from dataFile based on the combinedKey
@@ -621,10 +624,10 @@ const loadExampleFile = async (fileName: string) => {
 
               <div style={{ textAlign: 'left' }}>
                 <b>How to use:</b> <br />
-                You may drag and drop a plots file (see <a href="https://github.com/ajvetturini/kodak" target="_blank"><b>GitHub page</b></a> for examples on how to create a results file). Or, select a sampled output from below to view the visualization capabilities of this application.
+                You may drag and drop a created plots file created via the mango generative design package. Alternatively, you may select a sample output from below to view the visualization capabilities of this application.
                 <br />
                 <br />
-                Sample Outputs: <br />
+                <b>Sample Outputs:</b> <br />
                 <a onClick={() => {
                   setIsExpanded(!isExpanded);
                   loadExampleFile('SampleSingleObjective.plots');
@@ -649,10 +652,11 @@ const loadExampleFile = async (fileName: string) => {
 
             <div style={{ marginTop: 'auto', marginBottom: '45px' }}>
               <p>
-                <b>Funding and Contact:</b> <br />
+                {/*<b>Funding and Contact:</b> <br />
                 This work was funded by the NSF under grant award CMMI-2113301. <br />
                 If you have any questions, please feel free to <a href="mailto:avetturi@andrew.cmu.edu">email me!</a><br />
                 <br />
+                */}
                 <input
                   type="checkbox"
                   checked={rememberExpand}
@@ -691,6 +695,7 @@ const loadExampleFile = async (fileName: string) => {
           onUpdatePlotData={handleUpdatePlotTrace}
           updatePosition={handleUpdatePosition}
           windowObjectSize={obj.metadata}
+          onChange={() => false}
         />
       ))}
 
@@ -700,7 +705,7 @@ const loadExampleFile = async (fileName: string) => {
         <div className="delete-button-container">
           <button onClick={handleDeleteFile}>Upload new file</button>
           <span style={{ marginRight: '20px' }}></span>
-          <button onClick={handleSavePlots}>Save .plots file </button>
+          {/*<button onClick={handleSavePlots}>Save .plots file </button>*/}
         </div>
       )}
       

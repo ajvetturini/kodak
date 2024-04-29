@@ -19,11 +19,12 @@ interface PlottingObjectProps {
   onUpdatePlotData: (updatedPlotData: any) => void;
   createNewWindowObject: (xy: string, data: any) => void;
   title: string;
+  editMode: boolean;
 }
 
 
 
-const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, plotData, activeTab, plotWidth, plotHeight, onUpdatePlotLayout, onUpdatePlotData, plotOverview, vizData, createNewWindowObject, title }) => {
+const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, plotData, activeTab, plotWidth, plotHeight, onUpdatePlotLayout, onUpdatePlotData, plotOverview, vizData, createNewWindowObject, title, editMode }) => {
     // Add the scatterData to the top so we can access in different areas:
     const [layout, setLayout] = useState(plotData.layout);
     const [showPlotEditor, setShowPlotEditor] = useState(false);
@@ -51,7 +52,6 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
     const renderSettingsMenu = () => {
         if (activeTab === 'Settings') {
             // Logic to render settings menu based on graphType
-            //return "Add in: Export (SVG PNG), Change paper_color, font_style, axis titles, axis_colors, axis_fontsize, grid, hide / show option, etc."
             return (
                 <div className="settings-menu">
                     <div className="export-buttons">
@@ -131,7 +131,8 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
         const objective = <p><b>Objective:</b> <span className="objective">Minimize {plotOverview.objective_name}</span></p>;
     
         // Render constraints
-        const constraints = Object.keys(plotOverview)
+        try {
+            const constraints = Object.keys(plotOverview)
             .filter(key => key !== 'objective_name')
             .map((key, index) => {
                 if (typeof plotOverview[key] === 'object' && !Array.isArray(plotOverview[key])) {
@@ -187,7 +188,13 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
                         </div>
                     </div>
                 );
-            }
+
+        } catch (error) {
+            // Handle the error here
+            console.error("Error occurred:", error);
+        }
+    };
+
 
     const handleClose = (updatedPopUp: any) => {
         // Update your state or perform actions with the updatedPopUp data here
@@ -277,28 +284,35 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
             const popUp = selectedPoints[0];
             const windowX =  window.scrollX;
             const windowY =  window.scrollY;
+            
+            // TODO: Add a "Edit Mode" checkbox to the Settings bar
+            if (showEditor === true ) {
 
-            if (showEditor === true) {
-                setEditorPosition({ x: windowX, y: windowY }); // Set position for the editor
-                setCurrentPopUp(popUp['data']); // Pass the selected popUp data to the editor
-                setShowPlotEditor(true); // Show the editor
-
-                // Call another plotting function here if needed (check if in Visualized, if yes plot 3D Scatter)
-                const pointAsString = `(${selectedPoints[0].x}, ${selectedPoints[0].y})`;
-                
-                if (Object.keys(vizData).length === 1) {
-                    const pointPlotMap= Object.values(vizData)[0] as Record<string, any>;
-                    // Now we check if this x, y (point as string) is in the viz map:
-                    if (pointAsString in pointPlotMap) {
-                        const jsonDataToPlot = pointPlotMap[pointAsString];
-                        // Need to create a new WindowObject at App.tsx.... how can I do this???
-                        createNewWindowObject(pointAsString, jsonDataToPlot)
-                    }
-                    
+                // If in edit mode we show the editor:
+                if (editMode === true) {
+                    setEditorPosition({ x: windowX, y: windowY }); // Set position for the editor
+                    setCurrentPopUp(popUp['data']); // Pass the selected popUp data to the editor
+                    setShowPlotEditor(true); // Show the editor
                 } else {
-                    // WIP: When I incorporate better three.js and can "relax" the visualization a bit, I will then need
-                    //      to figure out how to map one WindowObject to a specific part of vizData.
+                    // Call another plotting function here if needed (check if in Visualized, if yes plot 3D Scatter)
+                    const pointAsString = `(${selectedPoints[0].x}, ${selectedPoints[0].y})`;
+                    
+                    if (Object.keys(vizData).length === 1) {
+                        const pointPlotMap= Object.values(vizData)[0] as Record<string, any>;
+                        // Now we check if this x, y (point as string) is in the viz map:
+                        if (pointAsString in pointPlotMap) {
+                            const jsonDataToPlot = pointPlotMap[pointAsString];
+                            // Need to create a new WindowObject at App.tsx.... how can I do this???
+                            createNewWindowObject(pointAsString, jsonDataToPlot)
+                        }
+                        
+                    } else {
+                        // WIP: When I incorporate better three.js and can "relax" the visualization a bit, I will then need
+                        //      to figure out how to map one WindowObject to a specific part of vizData.
+                    }
+
                 }
+                
             }
             
         };

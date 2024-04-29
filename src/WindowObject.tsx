@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react';
 import './WindowObject.css';
-import { render } from 'react-dom';
+import Plotly from 'plotly.js-dist';
 import PlottingObject from './PlottingObjects';
 
 interface WindowObjectProps {
@@ -15,6 +15,7 @@ interface WindowObjectProps {
   position_x: number;
   position_y: number;
   vizData: any;
+  onChange: () => void;
   createNewWindowObject: (xy: string, data: any) => void;
   onUpdatePlotLayout: (updatedLayout: any, identifier: string) => void;
   onUpdatePlotData: (updatedData: any, identifier: string) => void;
@@ -22,13 +23,14 @@ interface WindowObjectProps {
   windowObjectSize: [number, number];
 }
 
-const WindowObject: React.FC<WindowObjectProps> = ({ title, closeable, description, onClose, showGraphSettingsBar, plotData, graphType, onClick, position_x, position_y, vizData, createNewWindowObject, onUpdatePlotLayout, onUpdatePlotData, updatePosition, windowObjectSize}) => {
+const WindowObject: React.FC<WindowObjectProps> = ({ title, closeable, description, onClose, showGraphSettingsBar, plotData, graphType, onClick, position_x, position_y, vizData, createNewWindowObject, onUpdatePlotLayout, onUpdatePlotData, updatePosition, windowObjectSize, onChange}) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   // const [position, setPosition] = useState({ x: (window.innerWidth - 300) / 2, y: (window.innerHeight - 200) / 2 });
   const [position, setPosition] = useState({ x: position_x, y: position_y});
   const [activeTab, setActiveTab] = useState('View Output');
+  const [editMode, setEditMode] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const windowContentRef = useRef<HTMLDivElement>(null);
 
@@ -56,11 +58,12 @@ const WindowObject: React.FC<WindowObjectProps> = ({ title, closeable, descripti
   const [showTooltip2, setShowTooltip2] = useState(false);
   const [tooltipContent2, setTooltipContent2] = useState('');
   const [tooltipPosition2, setTooltipPosition2] = useState({ x: 0, y: 0 });
+  const [layout, setLayout] = useState(plotData.layout);
 
   // READ IN PLOT DATA AS JSON AT TOP TO USE LATER:
   let actualPlotData = {
     data: [],
-    layout: {},
+    layout: {} as Partial<Plotly.Layout>,
   };  // Set defautl value to a blank plotly figure
   try {
     actualPlotData = JSON.parse(plotData);
@@ -91,6 +94,29 @@ const WindowObject: React.FC<WindowObjectProps> = ({ title, closeable, descripti
     };
     window.addEventListener('mousemove', handleDrag);
     window.addEventListener('mouseup', handleDragEnd);
+  };
+
+  const exportImage = (svg_or_png: string) => {
+    let layout = actualPlotData.layout;
+    layout.height = windowContentHeight;
+    layout.width = windowContentWidth;
+    layout.uirevision = 'true';
+
+    if (svg_or_png === 'png') {
+      layout.paper_bgcolor = "rgba(255, 255, 255, 1)";
+    } else {
+      layout.paper_bgcolor = "rgba(255, 255, 255, 0)";
+    }
+    
+
+    const tempDiv = document.createElement('div');
+    Plotly.newPlot(tempDiv, actualPlotData, layout);
+    try {
+        // Download the plot as SVG
+        Plotly.downloadImage(tempDiv, { format: svg_or_png, width: windowContentWidth, height: windowContentHeight, filename: title });
+    } catch (error) {
+        console.error('Error exporting plot to SVG:', error);
+    } 
   };
   
 
@@ -148,6 +174,10 @@ const WindowObject: React.FC<WindowObjectProps> = ({ title, closeable, descripti
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
   };
+
+  const handleEditMode = (editMode: boolean) => {
+    setEditMode(editMode);
+  }
 
   const handleClick = () => {
     // Set the z-index of the clicked WindowObject to a higher value
@@ -215,16 +245,16 @@ const WindowObject: React.FC<WindowObjectProps> = ({ title, closeable, descripti
 
   // Function to render text based on graphType
   const renderSettingsMenuInWindow = () => {
-    return <PlottingObject graphType={graphType} plotData={actualPlotData} activeTab={activeTab} plotWidth={windowContentWidth} plotHeight={windowContentHeight} onUpdatePlotLayout={handleUpdatedPlotLayout} onUpdatePlotData={handleUpdatedPlotData} plotOverview={plotOverview} vizData={vizData} createNewWindowObject={createNewWindowObject} title={title}/>
+    return <PlottingObject graphType={graphType} plotData={actualPlotData} activeTab={activeTab} plotWidth={windowContentWidth} plotHeight={windowContentHeight} onUpdatePlotLayout={handleUpdatedPlotLayout} onUpdatePlotData={handleUpdatedPlotData} plotOverview={plotOverview} vizData={vizData} createNewWindowObject={createNewWindowObject} title={title} editMode={editMode}/>
   };
 
   const renderPlotInWindow = () => {
-    return <PlottingObject graphType={graphType} plotData={actualPlotData} activeTab={activeTab} plotWidth={windowContentWidth} plotHeight={windowContentHeight} onUpdatePlotLayout={handleUpdatedPlotLayout} onUpdatePlotData={handleUpdatedPlotData} plotOverview={plotOverview} vizData={vizData} createNewWindowObject={createNewWindowObject} title={title}/>
+    return <PlottingObject graphType={graphType} plotData={actualPlotData} activeTab={activeTab} plotWidth={windowContentWidth} plotHeight={windowContentHeight} onUpdatePlotLayout={handleUpdatedPlotLayout} onUpdatePlotData={handleUpdatedPlotData} plotOverview={plotOverview} vizData={vizData} createNewWindowObject={createNewWindowObject} title={title} editMode={editMode}/>
   };
 
   // Memoize the renderPlotInWindow function
   const memoizedRenderPlotInWindow = useMemo(() => {
-    return <PlottingObject graphType={graphType} plotData={actualPlotData} activeTab={activeTab} plotWidth={windowContentWidth} plotHeight={windowContentHeight} onUpdatePlotLayout={handleUpdatedPlotLayout} onUpdatePlotData={handleUpdatedPlotData} plotOverview={plotOverview} vizData={vizData} createNewWindowObject={createNewWindowObject} title={title}/>
+    return <PlottingObject graphType={graphType} plotData={actualPlotData} activeTab={activeTab} plotWidth={windowContentWidth} plotHeight={windowContentHeight} onUpdatePlotLayout={handleUpdatedPlotLayout} onUpdatePlotData={handleUpdatedPlotData} plotOverview={plotOverview} vizData={vizData} createNewWindowObject={createNewWindowObject} title={title} editMode={editMode}/>
   }, [graphType, actualPlotData, activeTab, windowContentWidth, windowContentHeight, handleUpdatedPlotLayout, onUpdatePlotData, plotOverview]);
 
   
@@ -260,9 +290,16 @@ const WindowObject: React.FC<WindowObjectProps> = ({ title, closeable, descripti
       { !isMinimized && showGraphSettingsBar && (
   <>
     <div className="graph-settings-bar">
-      <div className={`tab ${activeTab === 'View Output' ? 'active' : ''}`} onClick={() => handleTabClick('View Output')}>View Output</div>
-      <div className={`tab ${activeTab === 'Settings' ? 'active' : ''}`} onClick={() => handleTabClick('Settings')}>Settings</div>
+      {/*<div className={`tab ${activeTab === 'Settings' ? 'active' : ''}`} onClick={() => handleTabClick('Settings')}>Settings</div>*/}
+      <div className="tab" onClick={() => exportImage('png')}> Export to PNG</div>
+      <div className="tab" onClick={() => exportImage('svg')}> Export to SVG</div>
+      
+      <div className="tab">
+        <input type="checkbox" id="editPlotCheckbox" checked={editMode} onChange={(e) => handleEditMode(e.target.checked)}/>
+        <label>Edit Plot</label>
+      </div>
     </div>
+
     <div className="window-content" onClick={handleContentClick}>
       {activeTab === 'View Output' && memoizedRenderPlotInWindow}
       {activeTab === 'Settings' && renderSettingsMenuInWindow()}
