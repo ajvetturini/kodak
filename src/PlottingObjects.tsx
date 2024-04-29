@@ -241,7 +241,7 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
             const value = plotData['data'][key];
             // How to check if value is defined (i.e. to make sure it is not undefined / is a type I can check "in")
             //if (value && typeof value === 'object' && comparisonString in value && comparisonString in updatedPlot) {
-            if (arePlotsEqual(value, updatedPlot)) {
+            if (arePlotsEqual(value, updatedPlot) && meshChange === false) {
                 /*if ('type' in value && value.type === 'mesh3d') {
                     const updatedValue = { ...value, [fieldChange]: updatedPlot[fieldChange] };
                     updates.push(updatedValue)
@@ -254,7 +254,7 @@ const PlottingObject: React.FC<PlottingObjectProps> = React.memo(({ graphType, p
                 // If meshChange is true then we must push ALL mesh3d objects related objects to have this new color:
                 // I currently just dont use a legendgroup for the mesh elements i need to plot so this works fine for now
                 // In the future, I may see a bug pop up because of this really bad logic :)
-                if ('type' in value && 'legendgroup' in value && 'legendgroup' in updatedPlot && value.legendgroup === updatedPlot.legendgroup) {
+                if ('type' in value && value.type === 'mesh3d' ) {
                     const updatedValue = { ...value, [fieldChange]: updatedPlot[fieldChange] };
                     updates.push(updatedValue)
                 } 
