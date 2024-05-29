@@ -654,7 +654,6 @@ const loadExampleFile = async (fileName: string) => {
               <p>
                 {/*<b>Funding and Contact:</b> <br />
                 This work was funded by the NSF under grant award CMMI-2113301. <br />
-                If you have any questions, please feel free to <a href="mailto:avetturi@andrew.cmu.edu">email me!</a><br />
                 <br />
                 */}
                 <input
@@ -665,7 +664,7 @@ const loadExampleFile = async (fileName: string) => {
                 <label>Show bar upon open</label>
                 
               </p>
-              <div style={{ fontSize: '12px', marginBottom: '10px', color: 'rgba(169,169,169,0.5)'}}>Kodak Alpha b{curVersion} </div>
+              <div style={{ fontSize: '12px', marginBottom: '10px', color: 'rgba(169,169,169,0.5)'}}>Viewer build {curVersion} </div>
             </div>
           </div>
         )}
